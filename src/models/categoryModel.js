@@ -3,7 +3,8 @@ const {$Schema} =mongoose;
 const categorySchema = new Schema({
     code: String,
     name: String,
-    image: String
+    image: String,
+    createdAt:  Date 
 },{
     versionKey: false,
     collection: "categories"
