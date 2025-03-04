@@ -2,56 +2,73 @@
 <div class="content">
     <div class="container-fluid">
         <div class="flex items-center justify-content-between">
-            <h4 class="page-title mb-0">Danh sách sản phẩm</h4>
-            <a class="btn btn-default" href="/categories/create">Tạo loại sản phẩm</a>
+            <h4 class="page-title mb-0">Danh sách loại sản phẩm</h4>
+            <a class="btn btn-default" href="/products/create">Tạo loại sản phẩm</a>
             <a class="btn btn-default" onclick="toggleCategory()">Tạo modal</a>
-
         </div>
         <div class="flex justify-content-end mb-1">
             <div class="form-group flex full-width items-center ">
                 <label for="defaultSelect" class="white-space mr-1">Sắp xếp</label>
                 <select class="form-control form-control max-w-20 mb-4px" id="defaultSelect" onchange="changeSort(event)">
-                    <%sortObjectUIs.forEach(function(sortObjectUIs,index){ %>
-                        <%if(sortObjectUIs.code === sort){ %>
-                            <option value="<%=sortObjectUIs.code%>" selected ><%=sortObjectUIs.name%></option>
+                    <%sortObjects.forEach(function(sortObjects,index){ %>
+                        <%if(sortObjects.code === sort){ %>
+                            <option value="<%=sortObjects.code%>" selected ><%=sortObjects.name%></option>
                         <% } %>
-                        <%if(sortObjectUIs.code !== sort){ %>
-                            <option value="<%=sortObjectUIs.code%>"><%=sortObjectUIs.name%></option>
+                        <%if(sortObjects.code !== sort){ %>
+                            <option value="<%=sortObjects.code%>"><%=sortObjects.name%></option>
                         <% } %>
                         <% }); %>
                 </select>
             </div>
         </div>
-        <% if (categories && categories.length > 0) { %>
+        <% if (products && products.length > 0) { %>
         <div class="card">
             <div class="card-body">
                 <table class="table table-head-bg-success">
                     <thead>
                         <tr>
                             <th scope="col">STT</th>
-                            <th scope="col">Image</th>
-                            <th scope="col">Code</th>
-                            <th scope="col">Name</th>
+                            <th scope="col">Info</th>
+                            <!-- code,name,active -->
+                            <th scope="col">Price</th>
+                            <th scope="col">Color</th>
+                            <th scope="col">Category</th>
                             <th scope="col"></th>
                         </tr>
                     </thead>
-                    <tbody id="listCategory">
-                        <% categories.forEach(function(category,index){ %>
+                    <tbody id="listProduct">
+                        <% products.forEach(function(product,index){ %>
                         <tr>
                             <td><%=index+1%></td>
                             <td>
-                                <img src="/static/assets/img/<%=category.image%>" 
-                                alt="image"
-                                class="category-label"/>
-
+                                <div class="flex">
+                                    <div>
+                                        <img src="/static/assets/img/<%=product.images[0]%>" 
+                                        alt="image"
+                                        class="category-label"/>
+                                    </div>
+                                   <div>
+                                    <p><%=product.code%></p>
+                                    <p><%=product.name%></p>
+                                    <p><%=product.active%></p>
+                                   </div>
+                                </div>
                             </td>
-                            <td><%=category.code%></td>
-                            <td><%=category.name%></td>
+                            <td><%=product.price%></td>
+                            <td>
+                                <div class="form-group flex gap-2">
+                                    <label for="image">Color</label>
+                                    <% product.colors.forEach(function(color,index){ %>
+                                            <span class="product-checkbox-label mr-1 bg-<%=color%>"></span>
+                                        <% })%>
+                                </div>
+                            </td>
+                            <td><%=product.category?.name%></td>
                             <td>
                                 <a class="btn btn-primary btn-sm"
-                                    href="/categories/update/<%=category._id%>">Sửa</a>
+                                    href="/products/update/<%=product._id%>">Sửa</a>
                                 <a class="btn btn-danger btn-sm"
-                                    href="/categories/delete/<%=category._id%>">Xóa</a>
+                                    href="/products/delete/<%=product._id%>">Xóa</a>
                             </td>
 
                         </tr>

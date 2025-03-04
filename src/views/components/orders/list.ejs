@@ -2,58 +2,80 @@
 <div class="content">
     <div class="container-fluid">
         <div class="flex items-center justify-content-between">
-            <h4 class="page-title mb-0">Danh sách sản phẩm</h4>
-            <a class="btn btn-default" href="/categories/create">Tạo loại sản phẩm</a>
-            <a class="btn btn-default" onclick="toggleCategory()">Tạo modal</a>
-
+            <h4 class="page-title mb-0">Danh sách order</h4>
+            <a class="btn btn-default" href="/orders/create">Giả lập tạo đơn hàng</a>
+            <!-- <a class="btn btn-default" onclick="toggleCategory()">Tạo loại order </a> -->
         </div>
         <div class="flex justify-content-end mb-1">
             <div class="form-group flex full-width items-center ">
                 <label for="defaultSelect" class="white-space mr-1">Sắp xếp</label>
                 <select class="form-control form-control max-w-20 mb-4px" id="defaultSelect" onchange="changeSort(event)">
-                    <%sortObjectUIs.forEach(function(sortObjectUIs,index){ %>
-                        <%if(sortObjectUIs.code === sort){ %>
-                            <option value="<%=sortObjectUIs.code%>" selected ><%=sortObjectUIs.name%></option>
+                    <%sortObjects.forEach(function(sortObjects,index){ %>
+                        <%if(sortObjects.code === sort){ %>
+                            <option value="<%=sortObjects.code%>" selected ><%=sortObjects.name%></option>
                         <% } %>
-                        <%if(sortObjectUIs.code !== sort){ %>
-                            <option value="<%=sortObjectUIs.code%>"><%=sortObjectUIs.name%></option>
+                        <%if(sortObjects.code !== sort){ %>
+                            <option value="<%=sortObjects.code%>"><%=sortObjects.name%></option>
                         <% } %>
                         <% }); %>
                 </select>
             </div>
         </div>
-        <% if (categories && categories.length > 0) { %>
+        <% if (orders && orders.length > 0) { %>
         <div class="card">
             <div class="card-body">
                 <table class="table table-head-bg-success">
                     <thead>
                         <tr>
-                            <th scope="col">STT</th>
-                            <th scope="col">Image</th>
-                            <th scope="col">Code</th>
-                            <th scope="col">Name</th>
+                            <th scope="col">Mã Hóa Đơn</th>
+                            <!-- code,name,active -->
+                            <th scope="col">Sản Phẩm</th>
+                            <th scope="col">Giá</th>
+                            <th scope="col">Giảm Giá</th>
+                            <th scope="col">Trạng Thái</th>
+                            <th scope="col">Tổng Hóa Đơn</th>
+
                             <th scope="col"></th>
                         </tr>
                     </thead>
-                    <tbody id="listCategory">
-                        <% categories.forEach(function(category,index){ %>
+                    <tbody id="listProduct">
+                        <% orders.forEach(function(order,index){ %>
                         <tr>
-                            <td><%=index+1%></td>
                             <td>
-                                <img src="/static/assets/img/<%=category.image%>" 
-                                alt="image"
-                                class="category-label"/>
-
+                                <%=order.orderNo%>
                             </td>
-                            <td><%=category.code%></td>
-                            <td><%=category.name%></td>
                             <td>
-                                <a class="btn btn-primary btn-sm"
-                                    href="/categories/update/<%=category._id%>">Sửa</a>
+                                <div class="form-group gap-2">
+                                    <% order.orderItems.forEach(function(orderItem,index){ %>
+                                            <p><%=orderItem.quantity%>x<%=orderItem?.product?.name%></p>
+                                        <% })%>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group gap-2">
+                                    <% order.orderItems.forEach(function(orderItem,index){ %>
+                                            <p><%=orderItem.priceFormatString%></p>
+                                        <% })%>
+                                </div>
+                            </td>
+                            <td><%=order.discount%>%</td>
+                            <td class="<%=order.status%>"
+                                ><%=order.status%>
+                            </td>
+                            <td><%=order.totalFormatString%>VND</td>
+                            <td>
+                                    <%if(order.status !== "cancelled"){ %>
+                                        <a class="btn btn-primary btn-sm"
+                                        href="/orders/update/<%=order._id%>">
+                                        Giao hàng</a>
+        
+                                        <a class="btn btn-primary btn-sm"
+                                            href="/orders/update/<%=order._id%>">
+                                            Hoàn Thành</a>
+                                    <%}%>
                                 <a class="btn btn-danger btn-sm"
-                                    href="/categories/delete/<%=category._id%>">Xóa</a>
+                                    href="/orders/update/<%=order._id%>">Hủy đơn</a>
                             </td>
-
                         </tr>
                         <% }); %>
                     </tbody>
@@ -62,12 +84,10 @@
             <div class="card-body flex justify-content-center items-center">
                 <div
                     class="form-group flex justify-content-center items-center">
-                    <label for="defaultSelect" class="white-space">Page
-                        Size</label>
+                    <label for="defaultSelect" class="white-space">Page Size</label>
                     <select class="form-control form-control" id="defaultSelect"
                         onchange="changePageSize(event)">
-                        <% [5, 10, 20,
-                        30,50].forEach(function(pageSizeOption,index){ %>
+                        <% [5, 10, 20, 30,50].forEach(function(pageSizeOption,index){ %>
                         <%if(pageSizeOption === pageSize){ %>
                         <option selected><%= pageSizeOption %></option>
                         <% } %>

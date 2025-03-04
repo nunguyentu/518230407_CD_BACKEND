@@ -1,19 +1,22 @@
+import ProductModel from "../models/productModel.js";
 import CategoryModel from "../models/categoryModel.js";
 import { ObjectId } from "mongodb";
 import { removeVietnameseAccents } from "../common/index.js";
-const sortObjectUIs = [
+const sortObjects = [
   { code: "name_DESC", name: "Tên giảm dần" },
   { code: "name_ASC", name: "Tên tăng dần" },
   { code: "code_DESC", name: "Mã giảm dần" },
   { code: "code_ASC", name: "Mã tăng dần" },
 ];
-export async function listCategory(req, res) {
+
+const sizes = ["S", "M", "L","XL"]
+const colors = ["red", "green", "yellow","white","black"]
+export async function listProduct(req, res) {
   const search = req.query?.search;
   const pageSize = !!req.query.pageSize ? parseInt(req.query.pageSize) : 5; // 5
   const page = !!req.query.page ? parseInt(req.query.page) : 1;
   const skip = (page - 1) * pageSize;
   let sort = !!req.query.sort ? req.query.sort : null;
-  let sortObj=null
   // "code_ASC"
   // 11 categories
   // 0 - 4
@@ -28,25 +31,25 @@ export async function listCategory(req, res) {
       $regex: removeVietnameseAccents(search),
       $options: "i" };
   }
-  
   if(!sort){
-    sortObj = {createdAt: -1}
+  sort = {createdAt: -1}
   }else {
     const sortArray = sort.split('_')
-    sortObj ={ [sortArray[0]] : sortArray[1] === "ASC" ? 1: -1 }
-    console.log("sort",sort)
+    sort ={ [sortArray[0]] : sortArray[0] === "ASC" ? 1: -1 }
+   
   }
+
   try {
-    const countCategories = await CategoryModel.countDocuments(filters);
-    const categories = await CategoryModel.find(filters).skip(skip).limit(pageSize).sort(sortObj) 
-    res.render("pages/categories/list", {
-      title: "Categories",
-      categories: categories,
+    const countCategories = await ProductModel.countDocuments(filters);
+    const products = await ProductModel.find(filters).populate("category").skip(skip).limit(pageSize).sort(sort) // thêm sort vàoào trong (pageSize)
+    res.render("pages/products/list", {
+      title: "Products",
+      products: products,
       countPagination: Math.ceil(countCategories / pageSize),
       pageSize,
       page,
       sort,
-      sortObjectUIs,
+      sortObjects,
     });
   } catch (error) {
     console.log(error);
@@ -54,28 +57,51 @@ export async function listCategory(req, res) {
   }
 }
 
-export async function renderPageCreateCategory(req, res) {
-  res.render("pages/categories/form", {
-    title: " Create Categories",
+export async function renderPageCreateProduct(req, res) {
+  const categories = await CategoryModel.find({ deletedAt: null })
+  res.render("pages/products/form", {
+    title: " Create Products",
     mode: "Create",
-    category: {},
+    product: {},
+    sizes: sizes,
+    colors: colors,
+    categories: categories,
     err:{}
   });
 }
 
-export async function createCategory(req, res) {
-  const data = req.body;
+export async function createProduct(req, res) {
+  const categories = await CategoryModel.find({ deletedAt: null })
+  const { sizes: productSize,colors: productColor,image, ...dataOther } = req.body;
+  console.log("dataOther", dataOther)
+  let sizeArray = [], colorArray = [], imageArray = [image]
+  if(typeof productSize === "string"){
+    sizeArray = [productSize]
+  }
+  if(typeof productSize === "object"){
+    sizeArray = productSize
+  }
+  if(typeof productColor === "string"){
+    colorArray = [productColor]
+  }
+  if(typeof productColor === "object"){
+    colorArray = productColor
+  }
   try {
-  const category =   await CategoryModel.findOne({code: data.code,deletedAt: null})
-    if(category){
-      throw("code")
+
+  const product = await ProductModel.findOne({code: dataOther.code,deletedAt: null})
+    if(product){
+      throw("code");
     }
-    await CategoryModel.create({
-      ...data, createdAt: new Date()
+    await ProductModel.create({
+      sizes: sizeArray,
+      colors: colorArray,
+      images: imageArray,
+      ...dataOther, createdAt: new Date()
     });
-    res.redirect("/categories");
+    res.redirect("/products");
   } catch (error) {
-    console.log("error", error)
+    console.log("err", error)
     const err = {}
     if(error === "code"){
       err.code = "Mã sản phẩm này đã tồn tại"
@@ -85,40 +111,39 @@ export async function createCategory(req, res) {
         err[key] = error.errors[key].message
       })
     }
-    console.log("err", err)
+   
 
-    res.render("pages/categories/form", {
-      title: " Create Categories",
+    res.render("pages/products/form", {
+      title: " Create Products",
       mode: "Create",
-      category: { ...data },
+      product: { 
+        sizes: sizeArray,
+        colors: colorArray, 
+        ...dataOther 
+      },
+      sizes: sizes,
+      colors: colors,
+      categories: categories,
       err
     });
   }
 }
 
 
-export async function createCategoryByModal(req, res) {
-  const data = req.body;
+export async function renderPageUpdateProduct(req, res) {
   try {
-    const category = await CategoryModel.create({
-      ...data, createdAt: new Date()
-    });
-    res.json({ success: true, category: category })
-  } catch (error) {
-    console.log(error)
-  res.json({ success: false, category: {}})
-  }
-}
-
-export async function renderPageUpdateCategory(req, res) {
-  try {
+    const categories = await CategoryModel.find({ deletedAt: null })
     const { id } = req.params;
-    const category = await CategoryModel.findOne({ _id: new ObjectId(id), deletedAt: null });
-    if (category) {
-      res.render("pages/categories/form", {
-        title: " Create Categories",
+    const product = await ProductModel.findOne({ _id: new ObjectId(id), deletedAt: null })
+    if (product) {
+      console.log("product", product,categories)
+      res.render("pages/products/form", {
+        title: " Update Product",
         mode: "Update",
-        category: category,
+        product: product,
+        sizes: sizes,
+        colors: colors,
+        categories: categories,
         err: {}
       });
     } else {
@@ -128,9 +153,10 @@ export async function renderPageUpdateCategory(req, res) {
     res.send("Trang web này không tồn tại!");
   }
 }
-export async function updateCategory(req, res) {
+export async function updateProduct(req, res) {
   const { ...data } = req.body;
   const { id } = req.params;
+  console.log({})
   try {
     const category =   await CategoryModel.findOne({ code: data.code , deletedAt: null})
     if(category){
@@ -166,7 +192,7 @@ export async function updateCategory(req, res) {
     });
   }
 }
-export async function renderPageDeleteCategory(req, res) {
+export async function renderPageDeleteProduct(req, res) {
   try {
     const { id } = req.params;
     const category = await CategoryModel.findOne({_id: new ObjectId(id), deletedAt: null,});
@@ -185,7 +211,7 @@ export async function renderPageDeleteCategory(req, res) {
     res.send("Trang web này không tồn tại!");
   }
 }
-export async function deleteCategory(req, res) {
+export async function deleteProduct(req, res) {
   const { id } = req.body;
   try {
     await CategoryModel.updateOne(
