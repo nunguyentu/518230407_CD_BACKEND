@@ -64,17 +64,21 @@
                             </td>
                             <td><%=order.totalFormatString%>VND</td>
                             <td>
-                                    <%if(order.status !== "cancelled"){ %>
-                                        <a class="btn btn-primary btn-sm"
-                                        href="/orders/update/<%=order._id%>">
-                                        Giao hàng</a>
-        
+                                        <%if(order.status !== "cancelled" || order.status !== "completed"){ %>
+                                            <%if(order.status !== "delivering" ){ %>
+                                            <button 
+                                            class="btn btn-info btn-sm"
+                                        href="/updateStatus"
+                                        onclick="changeStatus('<%=order._id%>')"
+                                        >Giao hàng</button>
+                                        <%}%>
                                         <a class="btn btn-primary btn-sm"
                                             href="/orders/update/<%=order._id%>">
                                             Hoàn Thành</a>
+                                            <a class="btn btn-danger btn-sm"
+                                            href="/orders/update/<%=order._id%>">Hủy đơn</a>
                                     <%}%>
-                                <a class="btn btn-danger btn-sm"
-                                    href="/orders/update/<%=order._id%>">Hủy đơn</a>
+                       
                             </td>
                         </tr>
                         <% }); %>
@@ -84,7 +88,7 @@
             <div class="card-body flex justify-content-center items-center">
                 <div
                     class="form-group flex justify-content-center items-center">
-                    <label for="defaultSelect" class="white-space">Page Size</label>
+                    <label for="defaultSelect" class="white-space mr-3">Page Size</label>
                     <select class="form-control form-control" id="defaultSelect"
                         onchange="changePageSize(event)">
                         <% [5, 10, 20, 30,50].forEach(function(pageSizeOption,index){ %>

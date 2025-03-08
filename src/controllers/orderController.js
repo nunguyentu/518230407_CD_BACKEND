@@ -1,5 +1,6 @@
 import OrderModel from "../models/orderModel.js"; 
 import ProductModel from "../models/productModel.js"; 
+import { prepareOrderItems } from "../ultils/order.js"; 
 
 import { ObjectId } from "mongodb";
 
@@ -96,7 +97,6 @@ export async function createOrder(req, res) {
 
 
 export async function simulatorCreateOrder(req, res) {
-  console.log("req.body", req.body)
  
   const { discount,itemSelect,quantity,itemColor,itemSize, itemPrice,
     billingName,billingEmail,billingPhoneNumber,billingAddress: address,billingDistrict,billingCity } = req.body
@@ -117,16 +117,13 @@ export async function simulatorCreateOrder(req, res) {
     district:billingDistrict,
     city: billingCity,
   } 
-  const orderItems = itemSelect.map((productId,index)=>{
-    return {
-      productId: new ObjectId(productId),
-      quantity: quantity[index],
-      price: itemPrice[index],
-      color: itemColor[index],
-      sizes: itemSize[index], 
-    }
+  const orderItems = prepareOrderItems({
+    itemSelect: itemSelect,
+    quantity: quantity,
+    itemPrice: itemPrice,
+    itemColor: itemColor,
+    itemSize: itemSize,
   })
-  
   if(orderItems.length > 0) {
     for(let orderItem of orderItems){
       subTotal += (orderItem.quantity * orderItem.price)
@@ -151,6 +148,38 @@ export async function simulatorCreateOrder(req, res) {
   }
 }
 
+export async function updateStatusDeliveringOrder(req, res) {
+ 
+  const { status, orderId } = req.body
+  const currentOrder = await OrderModel.findOne({ _id: new ObjectId(orderId) },)
+  try {
+  
+    if(currentOrder){
+      const rs = await OrderModel.updateOne(
+        { _id: new ObjectId(orderId) },
+     {
+       status: "delivering",
+       updatedAt: new Date(),
+     })
+     res.send({
+     success: true,
+    
+  });
+    }else{
+      res.send({
+        success: false,
+        message: "Không tồn tại order này!",
+      });
+    }
+   
+  } catch (error) {
+    console.log("err", error)
+    res.send({
+      success: false,
+      message: "Thay đổi trạng thái không thành công: "+ currentOrder.orderNo,
+    });
+  }
+}
 // export async function renderPageUpdateProduct(req, res) {
 //   try {
 //     const categories = await CategoryModel.find({ deletedAt: null })

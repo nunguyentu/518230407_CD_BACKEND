@@ -3,8 +3,11 @@
     <div class="container-fluid">
         <div class="flex items-center justify-content-between">
             <h4 class="page-title mb-0">Danh sách loại sản phẩm</h4>
+
+            <div class="flex items-center gap-2">
             <a class="btn btn-default" href="/products/create">Tạo loại sản phẩm</a>
-            <a class="btn btn-default" onclick="toggleCategory()">Tạo modal</a>
+            <!-- <a class="btn btn-default" onclick="toggleCategory()">Tạo modal</a> -->
+        </div>
         </div>
         <div class="flex justify-content-end mb-1">
             <div class="form-group flex full-width items-center ">
@@ -79,7 +82,7 @@
             <div class="card-body flex justify-content-center items-center">
                 <div
                     class="form-group flex justify-content-center items-center">
-                    <label for="defaultSelect" class="white-space">Page
+                    <label for="defaultSelect" class="white-space mr-3">Page
                         Size</label>
                     <select class="form-control form-control" id="defaultSelect"
                         onchange="changePageSize(event)">
